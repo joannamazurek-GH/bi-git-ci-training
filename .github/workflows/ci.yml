@@ -1,0 +1,31 @@
+name: BI SQL Tests
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  test-sql:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run SQL tests
+        run: |
+          python - <<EOF
+          import sqlite3, sys
+
+          conn = sqlite3.connect(":memory:")
+          cur = conn.cursor()
+
+          cur.executescript(open("sql/sales.sql").read())
+          rows = cur.execute(open("sql/tests.sql").read()).fetchall()
+
+          if rows:
+              print("TEST FAILED")
+              sys.exit(1)
+
+          print("ALL TESTS PASSED")
+          EOF
